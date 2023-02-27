@@ -1,49 +1,60 @@
 import streamlit as st
-from streamlit import session_state as state
 import datetime
 
 def main():
+    st.set_page_config(page_title="Time Bank", page_icon="⏰")
+
+    # Initialize state variables
+    st.session_state.time_bank = datetime.timedelta(seconds=0)
+    st.session_state.is_adding_time = False
+    st.session_state.is_subtracting_time = False
+    st.session_state.time_since_last_update = datetime.datetime.now()
+
+    # Set up layout
     st.title("Time Bank")
+    st.write("Click the buttons below to add or subtract time.")
+    st.write("Time added is displayed in green, time subtracted in red.")
+    st.write("Current Time Bank Balance:")
+    time_bank_display = st.empty()
+    st.write("")
 
-    # Initialize session state variables
-    state.start_adding = False
-    state.start_deducting = False
-    state.total_time = datetime.timedelta(seconds=0)
+    add_button = st.button("Add Time")
+    subtract_button = st.button("Subtract Time")
 
-    # Create the "Add Time" button
-    add_button_text = "Start Adding Time" if not state.start_adding else "Stop Adding Time"
-    add_button = st.button(add_button_text)
-
-    # Create the "Deduct Time" button
-    deduct_button_text = "Start Deducting Time" if not state.start_deducting else "Stop Deducting Time"
-    deduct_button = st.button(deduct_button_text)
-
-    # Create the "Reset Time" button
-    reset_button = st.button("Reset Time")
-
-    # Calculate total time
-    if state.start_adding:
-        state.total_time += datetime.timedelta(seconds=1)
-    if state.start_deducting:
-        state.total_time -= datetime.timedelta(seconds=1)
-
-    # Update the UI
-    st.write(f"Total Time: {state.total_time}")
-    st.bar_chart({"total time": state.total_time.total_seconds()})
-
-    # Handle button clicks
-    if add_button_text == "Start Adding Time":
-        state.start_adding = True
-    else:
-        state.start_adding = False
-
-    if deduct_button_text == "Start Deducting Time":
-        state.start_deducting = True
-    else:
-        state.start_deducting = False
-
-    if reset_button:
-        state.total_time = datetime.timedelta(seconds=0)
+    # Update time bank and display
+    while True:
+        current_time = datetime.datetime.now()
+        time_delta = current_time - st.session_state.time_since_last_update
+        st.session_state.time_since_last_update = current_time
+        if st.session_state.is_adding_time:
+            st.session_state.time_bank += time_delta
+            time_bank_display.write(
+                f"<div style='color:green;font-size:64px;'>{str(st.session_state.time_bank)}</div>",
+                unsafe_allow_html=True,
+            )
+        elif st.session_state.is_subtracting_time:
+            st.session_state.time_bank -= time_delta
+            time_bank_display.write(
+                f"<div style='color:red;font-size:64px;'>{str(st.session_state.time_bank)}</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            time_bank_display.write(
+                f"<div style='font-size:64px;'>{str(st.session_state.time_bank)}</div>",
+                unsafe_allow_html=True,
+            )
+        if st.session_state.is_adding_time and not add_button:
+            st.session_state.is_adding_time = False
+            add_button = st.button("Add Time")
+        elif not st.session_state.is_adding_time and add_button:
+            st.session_state.is_adding_time = True
+            add_button = st.button("Stop Adding Time")
+        if st.session_state.is_subtracting_time and not subtract_button:
+            st.session_state.is_subtracting_time = False
+            subtract_button = st.button("Subtract Time")
+        elif not st.session_state.is_subtracting_time and subtract_button:
+            st.session_state.is_subtracting_time = True
+            subtract_button = st.button("Stop Subtracting Time")
 
 if __name__ == "__main__":
     main()

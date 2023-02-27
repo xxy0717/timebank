@@ -1,65 +1,86 @@
 import streamlit as st
-import time
 
+# 设置初始累计时长为0
+total_time = 0
 
-def main():
-    add_time = st.session_state.add_time or 0
-    sub_time = st.session_state.sub_time or 0
-    start_add = st.session_state.start_add or False
-    start_subtract = st.session_state.start_subtract or False
-    stop_add = st.session_state.stop_add or False
-    stop_subtract = st.session_state.stop_subtract or False
+# 设置柱状图的最大值
+max_value = 10
 
-    st.header('时长记录')
-    st.subheader(f'累计时长: {add_time - sub_time:.2f}s')
+# 定义一个计时器类
+class Timer:
+    def __init__(self):
+        self.start_time = None
+        self.total_time = 0
+        
+    def start(self):
+        self.start_time = st.session_state.now
+        
+    def stop(self):
+        elapsed_time = st.session_state.now - self.start_time
+        self.total_time += elapsed_time.total_seconds()
+        self.start_time = None
+        return elapsed_time.total_seconds()
 
-    if not start_add and not stop_add:
-        if st.button('开始增加'):
-            start_add = True
-            st.session_state.start_add = True
-            st.session_state.add_time = add_time
-    elif start_add and not stop_add:
-        if st.button('结束增加'):
-            start_add = False
-            stop_add = True
-            st.session_state.start_add = False
-            st.session_state.stop_add = True
-            st.session_state.add_time = add_time + time.time() - st.session_state.start_time
+# 创建计时器实例
+add_timer = Timer()
+subtract_timer = Timer()
 
-    if not start_subtract and not stop_subtract:
-        if st.button('开始扣减'):
-            start_subtract = True
-            st.session_state.start_subtract = True
-            st.session_state.sub_time = sub_time
-    elif start_subtract and not stop_subtract:
-        if st.button('结束扣减'):
-            start_subtract = False
-            stop_subtract = True
-            st.session_state.start_subtract = False
-            st.session_state.stop_subtract = True
-            st.session_state.sub_time = sub_time + time.time() - st.session_state.start_time
+# 设置页面标题和初始状态
+st.set_page_config(page_title="Add/Subtract Time", page_icon=":watch:", layout="wide")
+st.title("Add/Subtract Time")
+st.write(f"Total Time: **{total_time:.2f}** seconds")
 
-    if start_add:
-        st.write(f"已增加: {add_time + time.time() - st.session_state.start_time - sub_time:.2f}s")
+# 绘制柱状图
+st.progress(total_time / max_value)
 
-    if start_subtract:
-        st.write(f"已扣减: {sub_time + time.time() - st.session_state.start_time - add_time:.2f}s")
+# 添加“开始增加”按钮
+if "add_button" not in st.session_state:
+    st.session_state.add_button = st.button("Start Adding")
 
+# 添加“结束增加”按钮
+if st.session_state.add_button == False and "stop_add_button" not in st.session_state:
+    st.session_state.stop_add_button = st.button("Stop Adding")
 
-if __name__ == '__main__':
-    if 'add_time' not in st.session_state:
-        st.session_state.add_time = 0
-    if 'sub_time' not in st.session_state:
-        st.session_state.sub_time = 0
-    if 'start_add' not in st.session_state:
-        st.session_state.start_add = False
-    if 'start_subtract' not in st.session_state:
-        st.session_state.start_subtract = False
-    if 'stop_add' not in st.session_state:
-        st.session_state.stop_add = False
-    if 'stop_subtract' not in st.session_state:
-        st.session_state.stop_subtract = False
-    if 'start_time' not in st.session_state:
-        st.session_state.start_time = time.time()
+# 当点击“开始增加”按钮时
+if st.session_state.add_button:
+    # 保存当前时间
+    st.session_state.now = st.session_state.time or st.session_start_time()
+    add_timer.start()
+    # 按钮变为“结束增加”
+    st.session_state.add_button = False
+    st.session_state.stop_add_button = True
 
-    main()
+# 当点击“结束增加”按钮时
+if st.session_state.stop_add_button:
+    # 保存当前时间
+    st.session_state.now = st.session_state.time or st.session_start_time()
+    # 停止计时器并将计时的时长添加到累计时长中
+    elapsed_time = add_timer.stop()
+    total_time += elapsed_time
+    # 更新页面上的累计时长数值和柱状图的长度，并将按钮变回“开始增加”
+    st.write(f"Total Time: **{total_time:.2f}** seconds")
+    st.progress(total_time / max_value)
+    st.session_state.stop_add_button = False
+    st.session_state.add_button = True
+
+# 添加“开始扣减”按钮
+if "subtract_button" not in st.session_state:
+    st.session_state.subtract_button = st.button("Start Subtracting")
+
+# 添加“结束扣减”按钮
+if st.session_state.subtract_button == False and "stop_subtract_button" not in st.session_state:
+    st.session_state.stop_subtract_button = st.button("Stop Subtracting")
+
+# 当点击“开始扣减”按钮时
+if st.session_state.subtract_button:
+    # 保存当前时间
+    st.session_state.now = st.session_state.time or st.session_start_time()
+    subtract_timer.start()
+    # 按钮变为“结束扣减”
+    st.session_state.subtract_button = False
+    st.session_state.stop_subtract_button = True
+
+# 当点击“结束扣减”按钮时
+if st.session_state.stop_subtract_button:
+    # 保存当前时间
+    st.session_state.now = st.session_state.time or st

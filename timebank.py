@@ -2,56 +2,46 @@ import streamlit as st
 import time
 
 def main():
-    st.set_page_config(page_title="Time Bank")
+    # Set initial time and status
+    current_time = 0
+    is_adding_time = False
+
+    # Set up Streamlit app
+    st.set_page_config(page_title="Time Bank", page_icon=":money_with_wings:")
     st.title("Time Bank")
 
-    add_time = 0
-    sub_time = 0
-    total_time = 0
-    start_time = None
+    # Create bar chart to display time
+    time_chart = st.bar_chart({"Time": current_time})
 
-    # Display the total time
-    col1, col2 = st.beta_columns(2)
-    with col1:
-        st.subheader("Total Time")
-        total_time_text = st.empty()
-    with col2:
-        st.subheader("Total Time Chart")
-        total_time_chart = st.empty()
+    # Create "Add Time" button
+    add_button = st.button("Start Adding Time")
 
-    # Add and Subtract buttons
-    add_button, sub_button = st.beta_columns(2)
-    add_pressed = add_button.button("Start Adding Time")
-    sub_pressed = sub_button.button("Start Subtracting Time")
+    # Create "Subtract Time" button
+    subtract_button = st.button("Start Subtracting Time")
 
-    # Update the total time when adding or subtracting
-    while add_pressed or sub_pressed:
-        # Adding
-        if add_pressed:
-            add_button.button("Stop Adding Time")
-            if start_time is None:
-                start_time = time.time()
+    # Update time on each iteration
+    while True:
+        if is_adding_time:
+            current_time += 1
+            time_chart.add_rows({"Time": current_time})
+
+        # Check if "Add Time" button has been clicked
+        if add_button:
+            # Toggle adding time on or off
+            is_adding_time = not is_adding_time
+
+            if is_adding_time:
+                add_button.button("Stop Adding Time")
             else:
-                add_time += time.time() - start_time
-                start_time = None
-                add_pressed = False
-        # Subtracting
-        if sub_pressed:
-            sub_button.button("Stop Subtracting Time")
-            if start_time is None:
-                start_time = time.time()
-            else:
-                sub_time += time.time() - start_time
-                start_time = None
-                sub_pressed = False
+                add_button.button("Start Adding Time")
 
-        total_time = add_time - sub_time
-        total_time_text.markdown(f"{total_time:.2f} seconds")
-        total_time_chart.bar_chart([total_time])
+        # Check if "Subtract Time" button has been clicked
+        if subtract_button:
+            current_time -= 1
+            time_chart.add_rows({"Time": current_time})
 
-    # Show the final total time when not adding or subtracting
-    total_time_text.markdown(f"{total_time:.2f} seconds")
-    total_time_chart.bar_chart([total_time])
+        # Wait 1 second before updating time again
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()

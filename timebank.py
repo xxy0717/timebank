@@ -1,40 +1,22 @@
 import streamlit as st
-import time
 
 def main():
-    st.title("时长管理器")
-    add_time = st.session_state.add_time or 0
-    subtract_time = st.session_state.subtract_time or 0
-    total_time = add_time - subtract_time
-    st.write(f"累计时长为：{total_time} 秒")
-    start_time = None
-    end_time = None
+    add_time = st.session_state.get('add_time', 0) # 使用get方法获取变量，如果不存在则返回默认值0
+    subtract_time = st.session_state.get('subtract_time', 0)
     
     if st.button('开始增加'):
-        start_time = time.time()
-
-    if st.button('结束增加'):
-        end_time = time.time()
-
-    if start_time is not None and end_time is not None:
-        duration = int(end_time - start_time)
-        add_time += duration
         st.session_state.add_time = add_time
-        total_time = add_time - subtract_time
-        st.write(f"累计时长为：{total_time} 秒")
-
+        st.session_state.start_time = st.session_state.time if 'time' in st.session_state else 0
+    if st.button('结束增加'):
+        add_time += st.session_state.time - st.session_state.start_time
+        st.session_state.add_time = add_time
+    
     if st.button('开始扣减'):
-        start_time = time.time()
-
-    if st.button('结束扣减'):
-        end_time = time.time()
-
-    if start_time is not None and end_time is not None:
-        duration = int(end_time - start_time)
-        subtract_time += duration
         st.session_state.subtract_time = subtract_time
-        total_time = add_time - subtract_time
-        st.write(f"累计时长为：{total_time} 秒")
-
-if __name__ == '__main__':
-    main()
+        st.session_state.start_time = st.session_state.time if 'time' in st.session_state else 0
+    if st.button('结束扣减'):
+        subtract_time += st.session_state.time - st.session_state.start_time
+        st.session_state.subtract_time = subtract_time
+    
+    total_time = add_time - subtract_time
+    st.write(f'累计时长: {total_time} 秒')

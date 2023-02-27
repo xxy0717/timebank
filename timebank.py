@@ -38,7 +38,7 @@ def add_time():
     global add_button_text
     if add_button_text == "Start Adding Time":
         add_button_text = "Stop Adding Time"
-        timer_thread = st.experimental_background_thread(timer)
+        timer_thread = st.thread(timer)
     else:
         add_button_text = "Start Adding Time"
 

@@ -1,5 +1,6 @@
 import streamlit as st
 st.session_state.my_var = 0
+st.session_state['add_time'] = st.session_state.get('add_time', 0) + duration
 
 def main():
     st.set_page_config(page_title='时长银行')

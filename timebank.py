@@ -1,4 +1,5 @@
 import streamlit as st
+st.session_state.my_var = 0
 
 def main():
     st.set_page_config(page_title='时长银行')

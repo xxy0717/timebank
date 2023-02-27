@@ -3,71 +3,63 @@ import time
 
 
 def main():
-    st.set_page_config(page_title='Time Bank', page_icon=':money_with_wings:')
-    st.title('Time Bank')
+    add_time = st.session_state.add_time or 0
+    sub_time = st.session_state.sub_time or 0
+    start_add = st.session_state.start_add or False
+    start_subtract = st.session_state.start_subtract or False
+    stop_add = st.session_state.stop_add or False
+    stop_subtract = st.session_state.stop_subtract or False
 
-    add_time = 0
-    deduct_time = 0
-    is_adding = False
-    is_deducting = False
+    st.header('时长记录')
+    st.subheader(f'累计时长: {add_time - sub_time:.2f}s')
 
-    if 'add_time' in st.session_state:
-        add_time = st.session_state.add_time
+    if not start_add and not stop_add:
+        if st.button('开始增加'):
+            start_add = True
+            st.session_state.start_add = True
+            st.session_state.add_time = add_time
+    elif start_add and not stop_add:
+        if st.button('结束增加'):
+            start_add = False
+            stop_add = True
+            st.session_state.start_add = False
+            st.session_state.stop_add = True
+            st.session_state.add_time = add_time + time.time() - st.session_state.start_time
 
-    if 'deduct_time' in st.session_state:
-        deduct_time = st.session_state.deduct_time
+    if not start_subtract and not stop_subtract:
+        if st.button('开始扣减'):
+            start_subtract = True
+            st.session_state.start_subtract = True
+            st.session_state.sub_time = sub_time
+    elif start_subtract and not stop_subtract:
+        if st.button('结束扣减'):
+            start_subtract = False
+            stop_subtract = True
+            st.session_state.start_subtract = False
+            st.session_state.stop_subtract = True
+            st.session_state.sub_time = sub_time + time.time() - st.session_state.start_time
 
-    if 'is_adding' in st.session_state:
-        is_adding = st.session_state.is_adding
+    if start_add:
+        st.write(f"已增加: {add_time + time.time() - st.session_state.start_time - sub_time:.2f}s")
 
-    if 'is_deducting' in st.session_state:
-        is_deducting = st.session_state.is_deducting
-
-    add_button = st.button('开始增加')
-    deduct_button = st.button('开始扣减')
-
-    if add_button and not is_adding:
-        is_adding = True
-        st.session_state.is_adding = is_adding
-        with st.empty():
-            t0 = time.time()
-            while is_adding:
-                t1 = time.time()
-                add_time += t1 - t0
-                t0 = t1
-                st.session_state.add_time = add_time
-                st.session_state.is_adding = is_adding
-                st.write(f'累计时长：{add_time:.2f}秒')
-                time.sleep(0.1)
-
-    if deduct_button and not is_deducting:
-        is_deducting = True
-        st.session_state.is_deducting = is_deducting
-        with st.empty():
-            t0 = time.time()
-            while is_deducting:
-                t1 = time.time()
-                deduct_time += t1 - t0
-                t0 = t1
-                st.session_state.deduct_time = deduct_time
-                st.session_state.is_deducting = is_deducting
-                st.write(f'累计时长：{add_time - deduct_time:.2f}秒')
-                time.sleep(0.1)
-
-    if is_adding:
-        end_add_button = st.button('结束增加')
-        if end_add_button:
-            is_adding = False
-            st.session_state.is_adding = is_adding
-
-    if is_deducting:
-        end_deduct_button = st.button('结束扣减')
-        if end_deduct_button:
-            is_deducting = False
-            st.session_state.is_deducting = is_deducting
-
-    st.write(f'累计时长：{add_time - deduct_time:.2f}秒')
+    if start_subtract:
+        st.write(f"已扣减: {sub_time + time.time() - st.session_state.start_time - add_time:.2f}s")
 
 
 if __name__ == '__main__':
+    if 'add_time' not in st.session_state:
+        st.session_state.add_time = 0
+    if 'sub_time' not in st.session_state:
+        st.session_state.sub_time = 0
+    if 'start_add' not in st.session_state:
+        st.session_state.start_add = False
+    if 'start_subtract' not in st.session_state:
+        st.session_state.start_subtract = False
+    if 'stop_add' not in st.session_state:
+        st.session_state.stop_add = False
+    if 'stop_subtract' not in st.session_state:
+        st.session_state.stop_subtract = False
+    if 'start_time' not in st.session_state:
+        st.session_state.start_time = time.time()
+
     main()
